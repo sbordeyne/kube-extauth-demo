@@ -19,6 +19,7 @@ configMapGenerator:
   - name: opa-envoy-config
     files:
       - ./config/opa-envoy.yaml
+      - ./config/rs256.pem
 
 images:
   - name: open-policy-agent
