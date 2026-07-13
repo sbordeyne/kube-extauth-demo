@@ -10,6 +10,7 @@ resources:
   - Service-open-policy-agent.yaml
   - PodDisruptionBudget-open-policy-agent.yaml
   - HorizontalPodAutoscaler-open-policy-agent.yaml
+  - ReferenceGrant-opa-envoy.yaml
 
 configMapGenerator:
   - name: opa-policies
