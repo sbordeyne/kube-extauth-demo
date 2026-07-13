@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -22,6 +25,76 @@ const (
   PUBLIC_KEY_PATH = "/etc/jwt-test-server/rs256.pem"
   PRIVATE_KEY_PATH = "/etc/jwt-test-server/rs256.key"
 )
+
+// knownHints are the explicit type hints accepted as a "key:hint" suffix.
+var knownHints = map[string]bool{"string": true, "int": true, "float": true, "bool": true, "json": true}
+
+// parseClaim turns a raw query key and its values into a claim key and a typed
+// value. A "key:hint" suffix forces the type of every value; otherwise each
+// value is type-inferred. Repeated keys (multiple values) yield a []any array.
+func parseClaim(rawKey string, values []string) (string, any, error) {
+  key := rawKey
+  hint := ""
+  if i := strings.LastIndex(rawKey, ":"); i >= 0 && knownHints[rawKey[i+1:]] {
+    key, hint = rawKey[:i], rawKey[i+1:]
+  }
+
+  if len(values) == 1 {
+    v, err := coerceOrInfer(hint, values[0])
+    return key, v, err
+  }
+  arr := make([]any, len(values))
+  for i, s := range values {
+    v, err := coerceOrInfer(hint, s)
+    if err != nil {
+      return key, nil, err
+    }
+    arr[i] = v
+  }
+  return key, arr, nil
+}
+
+// coerceOrInfer applies an explicit hint, or infers the scalar type when hint is empty.
+func coerceOrInfer(hint, s string) (any, error) {
+  switch hint {
+  case "":
+    return inferScalar(s), nil
+  case "string":
+    return s, nil
+  case "int":
+    return strconv.ParseInt(s, 10, 64)
+  case "float":
+    return strconv.ParseFloat(s, 64)
+  case "bool":
+    return strconv.ParseBool(s)
+  case "json":
+    var v any
+    if err := json.Unmarshal([]byte(s), &v); err != nil {
+      return nil, err
+    }
+    return v, nil
+  default:
+    return nil, fmt.Errorf("unknown type hint %q", hint)
+  }
+}
+
+// inferScalar guesses a scalar type: bool (exact true/false), then int64, then
+// float64, falling back to the raw string.
+func inferScalar(s string) any {
+  switch s {
+  case "true":
+    return true
+  case "false":
+    return false
+  }
+  if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+    return i
+  }
+  if f, err := strconv.ParseFloat(s, 64); err == nil {
+    return f
+  }
+  return s
+}
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
@@ -41,19 +114,24 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  claims := jwt.MapClaims{
-    "iss": "jwt-test-server",
-    "sub": "test-user",
-    "aud": "test-audience",
-    "exp": time.Now().Add(ttl).Unix(),
-    "iat": time.Now().Unix(),
-    "jti": jti.String(),
-  }
-  for key, values := range query {
-    if key != "ttl" {
-      claims[key] = values[0]
+  // Default iss; the client may override it via a query param. exp/iat/jti are
+  // forced by the server below so the client cannot override them.
+  claims := jwt.MapClaims{"iss": "jwt-test-server"}
+  for rawKey, values := range query {
+    if rawKey == "ttl" {
+      continue
     }
+    key, val, err := parseClaim(rawKey, values)
+    if err != nil {
+      http.Error(w, fmt.Sprintf("Invalid claim %q: %v", rawKey, err), http.StatusBadRequest)
+      return
+    }
+    claims[key] = val
   }
+  now := time.Now()
+  claims["exp"] = now.Add(ttl).Unix()
+  claims["iat"] = now.Unix()
+  claims["jti"] = jti.String()
 
   token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
   privateKeyData, err := os.ReadFile(PRIVATE_KEY_PATH)
