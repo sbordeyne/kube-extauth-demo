@@ -15,7 +15,7 @@ resources:
 configMapGenerator:
   - name: opa-policies
     files:
-      - ./policies/authz/platform.rego
+      - ./policies/envoy/authz/platform.rego
   - name: opa-envoy-config
     files:
       - ./config/opa-envoy.yaml

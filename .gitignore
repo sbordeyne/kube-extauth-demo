@@ -2,3 +2,4 @@ charts/
 dist/
 .dev-data/
 !.dev-data/.gitkeep
+input.json

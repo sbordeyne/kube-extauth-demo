@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "tilt-dev.tiltfile"
+        "tilt-dev.tiltfile",
+        "tsandall.opa"
     ]
 }
