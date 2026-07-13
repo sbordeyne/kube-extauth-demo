@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: jwt-test-server
+
+resources:
+  - Namespace-jwt-test-server.yaml
+  - Deployment-jwt-test-server.yaml
+  - Service-jwt-test-server.yaml
+  - HTTPRoute-jwt-test-server.yaml
+
+configMapGenerator:
+  - name: jwt-test-server-config
+    files:
+      - ./config/rs256.pem
+      - ./config/rs256.key
+
+images:
+  - name: jwt-test-server
+    newName: ghcr.io/sbordeyne/jwt-test-server
+    newTag: latest

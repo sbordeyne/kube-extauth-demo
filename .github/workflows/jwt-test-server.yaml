@@ -36,6 +36,6 @@ jobs:
         with:
           version: "~> v2"
           workdir: jwt-test-server
-          args: release --clean --snapshot --skip=validate
+          args: release --clean --skip=validate,announce
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: open-policy-agent
 
 resources:
+  - Namespace-open-policy-agent.yaml
   - ServiceAccount-open-policy-agent.yaml
   - Deployment-open-policy-agent.yaml
   - Service-open-policy-agent.yaml

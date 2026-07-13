@@ -9,6 +9,8 @@ kustomize = "latest"
 jq = "latest"
 yq = "latest"
 tilt = "latest"
+go = "latest"
+goreleaser = "latest"
 
 [tasks.start]
 description = "Start the application in dev mode in k3d"
@@ -39,3 +41,11 @@ fi
 [tasks."kube:delete"]
 description = "Delete k3d cluster"
 run = "k3d cluster delete demo"
+
+[tasks."opa:test"]
+description = "Run OPA tests"
+run = "opa test ./openpolicyagent/policies"
+
+[tasks."opa:lint"]
+description = "Run OPA linter"
+run = "regal lint ./openpolicyagent/policies"
