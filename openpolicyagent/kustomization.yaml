@@ -24,4 +24,4 @@ configMapGenerator:
 images:
   - name: open-policy-agent
     newName: openpolicyagent/opa
-    newTag: 1.16.2-envoy-static
+    newTag: 1.18.2-envoy-static
