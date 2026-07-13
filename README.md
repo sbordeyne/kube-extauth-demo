@@ -31,7 +31,8 @@ Edit the `openpolicyagent/policies/authz/platform.rego` file to test out rego po
 curl -sL -XOPTIONS http://api.demo.localhost/status/200
 ```
 
-The exposed server is [`httpbin`](https://httpbin.org), [under the go flavor](https://github.com/mccutchen/go-httpbin/tree/main).
+The exposed servers are [`httpbin`](https://httpbin.org), [under the go flavor](https://github.com/mccutchen/go-httpbin/tree/main),
+and [`jsonplaceholder`](https://jsonplaceholder.typicode.com).
 
 Check the provided [OpenAPI Spec file](./httpbin.openapi.yaml) for more details.
 
@@ -44,3 +45,4 @@ The public key is automatically mounted in `/config/rs256.pem` in **OpenPolicyAg
 - Allow access to any `GET /status` API calls, but deny other HTTP methods
 - Check that the JWT has the scope "html:read" in its `scopes` claim in order to access the `/html` endpoint
 - Check that JWTs are signed with the proper signing key when provided for a protected endpoint.
+- Check that the subject of the JWT matches the user id in the `GET /users/:id` endpoint. A regular user should be able to only see his/her data, not the others. Similarly the `GET /users/` list endpoint should be disallowed.

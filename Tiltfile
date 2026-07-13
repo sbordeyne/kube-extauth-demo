@@ -64,3 +64,10 @@ resource(
     resource_deps=["gateway"],
     wait_cmd="kubectl wait deployment/httpbin -n httpbin --for=condition=Available --timeout=120s"
 )
+
+resource(
+    "jsonplaceholder",
+    "jsonplaceholder",
+    resource_deps=["gateway"],
+    wait_cmd="kubectl wait deployment/jsonplaceholder -n jsonplaceholder --for=condition=Available --timeout=120s"
+)
