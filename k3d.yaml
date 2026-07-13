@@ -1,0 +1,46 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: demo
+
+servers: 1
+agents: 2
+
+image: rancher/k3s:latest
+
+kubeAPI:
+  host: "kube.demo.localhost"
+  hostPort: "6445"
+
+options:
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true
+
+volumes:
+  - volume: ${PWD}:/mnt/src
+    nodeFilters:
+      - server:*
+      - agent:*
+  - volume: ${PWD}/.dev-data:/data
+    nodeFilters:
+      - server:*
+      - agent:*
+  - volume: ${PWD}/.dev-data/k3d/pvcs:/var/lib/rancher/k3s/storage
+    nodeFilters:
+      - server:*
+      - agent:*
+
+# Expose kgateway listener ports once services are deployed (uncomment as needed):
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer

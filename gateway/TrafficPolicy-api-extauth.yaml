@@ -1,0 +1,16 @@
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: TrafficPolicy
+metadata:
+  name: api-extauth
+  labels:
+    app.kubernetes.io/name: open-policy-agent
+    app.kubernetes.io/part-of: infra
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: gateway
+      sectionName: api-demo-localhost-http
+  extAuth:
+    extensionRef:
+      name: opa-envoy

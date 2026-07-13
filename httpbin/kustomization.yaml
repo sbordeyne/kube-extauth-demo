@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: httpbin
+
+resources:
+  - Namespace-httpbin.yaml
+  - Deployment-httpbin.yaml
+  - Service-httpbin.yaml
+  - PodDisruptionBudget-httpbin.yaml
+  - HorizontalPodAutoscaler-httpbin.yaml
+  - HTTPRoute-httpbin.yaml
+
+images:
+  - name: httpbin
+    newName: ghcr.io/mccutchen/go-httpbin
+    newTag: 2.23.1

@@ -1,0 +1,41 @@
+[tools]
+k3d = "latest"
+kubectl = "latest"
+opa = "latest"
+regal = "latest"
+helm = "latest"
+k9s = "latest"
+kustomize = "latest"
+jq = "latest"
+yq = "latest"
+tilt = "latest"
+
+[tasks.start]
+description = "Start the application in dev mode in k3d"
+depends = ["kube:create"]
+run = "tilt up --context k3d-demo"
+
+[tasks.stop]
+description = "Stop Tilt watcher and delete k3d cluster"
+run = '''
+tilt down
+k3d cluster delete demo
+'''
+
+
+# k3d tasks
+[tasks."kube:create"]
+description = "Create k3d cluster from k3d.yaml"
+run = '''
+clusters=$(k3d cluster list -o json | jq -r ".[].name")
+if [[ $clusters == *"demo"* ]]; then
+  echo "k3d cluster 'demo' already exists, skipping creation"
+else
+  echo "Creating k3d cluster 'demo' from k3d.yaml"
+   k3d cluster create --config k3d.yaml
+fi
+'''
+
+[tasks."kube:delete"]
+description = "Delete k3d cluster"
+run = "k3d cluster delete demo"

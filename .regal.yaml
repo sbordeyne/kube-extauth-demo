@@ -1,0 +1,9 @@
+rules:
+  style:
+    line-length:
+      # one of "error", "warning", "ignore"
+      level: error
+      # maximum line length
+      max-line-length: 120
+      # if any single word on a line exceeds this length, ignore it
+      non-breakable-word-threshold: 100

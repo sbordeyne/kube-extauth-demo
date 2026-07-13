@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: open-policy-agent
+
+resources:
+  - ServiceAccount-open-policy-agent.yaml
+  - Deployment-open-policy-agent.yaml
+  - Service-open-policy-agent.yaml
+  - PodDisruptionBudget-open-policy-agent.yaml
+  - HorizontalPodAutoscaler-open-policy-agent.yaml
+
+configMapGenerator:
+  - name: opa-policies
+    files:
+      - ./policies/authz/platform.rego
+  - name: opa-envoy-config
+    files:
+      - ./config/opa-envoy.yaml
+
+images:
+  - name: open-policy-agent
+    newName: openpolicyagent/opa
+    newTag: 1.16.2-envoy-static

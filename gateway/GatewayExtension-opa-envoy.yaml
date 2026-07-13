@@ -1,0 +1,15 @@
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayExtension
+metadata:
+  name: opa-envoy
+  labels:
+    app.kubernetes.io/name: open-policy-agent
+    app.kubernetes.io/part-of: infra
+spec:
+  type: ExtAuth
+  extAuth:
+    grpcService:
+      backendRef:
+        name: open-policy-agent
+        port: 9191
+        namespace: open-policy-agent

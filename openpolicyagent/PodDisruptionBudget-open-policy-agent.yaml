@@ -1,0 +1,16 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: open-policy-agent
+  labels:
+    app.kubernetes.io/name: open-policy-agent
+    app.kubernetes.io/part-of: infra
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/language: go
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: infra-open-policy-agent-api
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: infra-open-policy-agent-api
+  minAvailable: 1

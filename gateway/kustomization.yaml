@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gateway
+
+resources:
+  - Namespace-gateway.yaml
+  - Gateway-gateway.yaml
+  - HTTPListenerPolicy-gateway-logging.yaml
+  - GatewayExtension-opa-envoy.yaml
+  - TrafficPolicy-api-extauth.yaml
