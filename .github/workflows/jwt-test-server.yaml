@@ -3,6 +3,7 @@ name: jwt-test-server image
 on:
   push:
     branches: [master]
+    tags: ["v*"]
     paths:
       - "jwt-test-server/**"
       - ".github/workflows/jwt-test-server.yaml"
@@ -36,6 +37,6 @@ jobs:
         with:
           version: "~> v2"
           workdir: jwt-test-server
-          args: release --clean --skip=validate,announce
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
