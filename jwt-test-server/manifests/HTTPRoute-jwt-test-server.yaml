@@ -4,20 +4,14 @@ metadata:
   name: jwt-test-server
 spec:
   hostnames:
-    - api.demo.localhost
+    - auth.demo.localhost
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: gateway
       namespace: gateway
   rules:
-    - filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: gateway.kgateway.dev
-            kind: TrafficPolicy
-            name: cors
-      matches:
+    - matches:
         - path:
             type: PathPrefix
             value: /auth

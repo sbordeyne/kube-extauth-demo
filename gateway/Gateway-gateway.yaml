@@ -12,3 +12,10 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: auth-demo-localhost-http
+      hostname: auth.demo.localhost
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All

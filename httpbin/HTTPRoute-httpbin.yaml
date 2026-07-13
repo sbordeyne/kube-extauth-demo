@@ -11,13 +11,7 @@ spec:
       name: gateway
       namespace: gateway
   rules:
-    - filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: gateway.kgateway.dev
-            kind: TrafficPolicy
-            name: cors
-      matches:
+    - matches:
         - path:
             type: PathPrefix
             value: /

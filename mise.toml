@@ -49,3 +49,11 @@ run = "opa test ./openpolicyagent/policies"
 [tasks."opa:lint"]
 description = "Run OPA linter"
 run = "regal lint ./openpolicyagent/policies"
+
+[tasks."get:auth"]
+description = "Get the auth token from the jwt-test-server"
+run = "curl -sL http://auth.demo.localhost/auth?ttl=5m"
+
+[tasks."get:api"]
+description = "Get httpbin"
+run = "curl -sL http://api.demo.localhost/status/200"
