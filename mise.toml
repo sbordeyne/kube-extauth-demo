@@ -24,6 +24,7 @@ description = "Stop Tilt watcher and delete k3d cluster"
 run = '''
 tilt down
 k3d cluster delete demo
+rm -rf .dev-data/
 '''
 
 
