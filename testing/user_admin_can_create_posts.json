@@ -1,0 +1,27 @@
+{
+  "name": "user_admin_can_create_posts",
+  "description": "admin has post:create and can create a post",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "admin@example.com", "password": "admin" }
+      },
+      "expect": { "status": 200 },
+      "capture": { "token": ".token" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": { "title": "Admin post", "content": "Created by admin", "status": "published" }
+      },
+      "expect": {
+        "status": 201,
+        "jq": [".id != null", ".title == \"Admin post\""]
+      }
+    }
+  ]
+}

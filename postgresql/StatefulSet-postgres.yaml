@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: infra
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/language: c
+    app.kubernetes.io/component: db
+    app.kubernetes.io/instance: infra-postgres-db
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: infra-postgres-db
+  serviceName: postgres
+  replicas: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: postgres
+          app.kubernetes.io/part-of: infra
+          app.kubernetes.io/managed-by: kustomize
+          app.kubernetes.io/language: c
+          app.kubernetes.io/component: db
+          app.kubernetes.io/instance: infra-postgres-db
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/part-of: infra
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/language: c
+        app.kubernetes.io/component: db
+        app.kubernetes.io/instance: infra-postgres-db
+    spec:
+      serviceAccountName: postgres
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              value: demo
+            - name: POSTGRES_PASSWORD
+              value: demo
+            - name: POSTGRES_DB
+              value: demo
+          resources:
+            limits:
+              memory: 4G
+              cpu: 500m
+            requests:
+              memory: 50Mi
+              cpu: 10m
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql
+          livenessProbe:
+            exec:
+              command: [ "pg_isready", "-U", "demo" ]
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: [ "pg_isready", "-U", "demo" ]
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10

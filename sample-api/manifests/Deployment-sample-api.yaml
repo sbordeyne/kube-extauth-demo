@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-api
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: demo-sample-api
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    spec:
+      serviceAccountName: sample-api
+      containers:
+        - name: sample-api
+          image: sample-api
+          imagePullPolicy: Always
+          command: ["/data/tilt/sample-api"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 2000m
+              memory: 2000Mi
+          startupProbe:
+            httpGet:
+              path: /healthz/live
+              port: health
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz/live
+              port: health
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: health
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9090
+              name: health
+          volumeMounts:
+            - name: config
+              mountPath: /etc/sample-api
+              readOnly: true
+            - name: tilt-binaries
+              mountPath: /data/tilt
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: sample-api-config
+        - name: tilt-binaries
+          hostPath:
+            path: /data/tilt
+            type: DirectoryOrCreate
+      restartPolicy: Always

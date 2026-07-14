@@ -1,0 +1,69 @@
+{
+  "name": "user_editor_cannot_edit_others_posts",
+  "description": "editor has only post:edit:me \u2014 replacing admin's post must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "editor@example.com",
+          "password": "editor"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/v1/posts/{{post_id}}",
+        "body": {
+          "title": "nope",
+          "content": "x"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token2}}"
+    }
+  ]
+}

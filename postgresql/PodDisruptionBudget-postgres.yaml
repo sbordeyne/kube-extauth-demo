@@ -1,0 +1,16 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: infra
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/language: c
+    app.kubernetes.io/component: db
+    app.kubernetes.io/instance: infra-postgres-db
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: infra-postgres-db
+  minAvailable: 1

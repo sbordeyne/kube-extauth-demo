@@ -1,0 +1,49 @@
+{
+  "name": "user_editor_can_delete_self_posts",
+  "description": "editor has post:delete:me and can delete its own post",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "editor@example.com",
+          "password": "editor"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "DELETE",
+        "path": "/v1/posts/{{post_id}}"
+      },
+      "expect": {
+        "status": 204
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "user_norole_cannot_list_users",
+  "description": "norole has no scopes \u2014 listing users must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "norole@example.com",
+          "password": "norole"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

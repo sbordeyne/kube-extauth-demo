@@ -1,0 +1,90 @@
+{
+  "name": "jwt_expired_is_denied",
+  "description": "a validly-signed JWT with exp in the past must be denied on every authenticated call (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/posts"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/posts/00000000-0000-0000-0000-000000000000"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/posts/00000000-0000-0000-0000-000000000000/comments"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts/00000000-0000-0000-0000-000000000000/comments",
+        "body": {
+          "content": "a comment"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+          "email": "newuser-{{nonce}}@example.com",
+          "password": "password123",
+          "first_name": "New",
+          "last_name": "User",
+          "role": "reader"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "@expired"
+    }
+  ]
+}

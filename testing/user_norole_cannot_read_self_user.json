@@ -1,0 +1,33 @@
+{
+  "name": "user_norole_cannot_read_self_user",
+  "description": "norole has no scopes (not even users:read:me) \u2014 reading own user must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "norole@example.com",
+          "password": "norole"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token",
+        "uid": ".user.id"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users/{{uid}}"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

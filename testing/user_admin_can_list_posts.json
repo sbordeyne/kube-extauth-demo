@@ -1,0 +1,35 @@
+{
+  "name": "user_admin_can_list_posts",
+  "description": "admin has post:list and can list posts",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/posts"
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".data != null"
+        ]
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "user_norole_can_login",
+  "description": "norole logs in and receives a token whose role has no scopes",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "norole@example.com",
+          "password": "norole"
+        }
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".token != null",
+          ".user.role.slug == \"norole\"",
+          "(.user.role.scopes | length) == 0"
+        ]
+      }
+    }
+  ]
+}

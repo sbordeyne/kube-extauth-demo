@@ -1,0 +1,68 @@
+{
+  "name": "user_norole_cannot_create_comments",
+  "description": "norole has no scopes \u2014 commenting must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "norole@example.com",
+          "password": "norole"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts/{{post_id}}/comments",
+        "body": {
+          "content": "a comment"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token2}}"
+    }
+  ]
+}

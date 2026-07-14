@@ -1,0 +1,17 @@
+{
+  "name": "user_editor_can_login",
+  "description": "editor logs in and receives a bearer token",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "editor@example.com", "password": "editor" }
+      },
+      "expect": {
+        "status": 200,
+        "jq": [".token != null and (.token | length) > 0", ".token_type == \"bearer\"", ".user.role.slug == \"editor\""]
+      }
+    }
+  ]
+}

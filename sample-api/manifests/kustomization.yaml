@@ -1,0 +1,40 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sample-api
+
+resources:
+  - Namespace-sample-api.yaml
+  - ServiceAccount-sample-api.yaml
+  - Deployment-sample-api.yaml
+  - Service-sample-api.yaml
+  - HorizontalPodAutoscaler-sample-api.yaml
+  - PodDisruptionBudget-sample-api.yaml
+  - HTTPRoute-sample-api.yaml
+
+images:
+  - name: sample-api
+    newName: alpine
+    newTag: "3.23"
+
+configMapGenerator:
+  - name: sample-api-config
+    files:
+      - ./config/config.yaml
+      - ./config/rs256.key
+      - ./config/rs256.pem
+
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/part-of: demo
+      app.kubernetes.io/name: sample
+      app.kubernetes.io/component: api
+      app.kubernetes.io/language: go
+    includeTemplates: true
+    includeSelectors: false
+  - pairs:
+      app.kubernetes.io/instance: demo-sample-api
+    includeTemplates: true
+    includeSelectors: true

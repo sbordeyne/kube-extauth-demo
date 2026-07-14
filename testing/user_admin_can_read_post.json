@@ -1,0 +1,68 @@
+{
+  "name": "user_admin_can_read_post",
+  "description": "admin has post:read and can read a post",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/posts/{{post_id}}"
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".id != null"
+        ]
+      },
+      "auth": "{{token2}}"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "name": "user_reader_cannot_edit_posts",
+  "description": "reader lacks post:edit \u2014 replacing a post must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "reader@example.com",
+          "password": "reader"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/v1/posts/{{post_id}}",
+        "body": {
+          "title": "nope",
+          "content": "x"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token2}}"
+    }
+  ]
+}

@@ -31,12 +31,9 @@ Edit the `openpolicyagent/policies/authz/platform.rego` file to test out rego po
 curl -sL -XOPTIONS http://api.demo.localhost/status/200
 ```
 
-The exposed servers are [`httpbin`](https://httpbin.org), [under the go flavor](https://github.com/mccutchen/go-httpbin/tree/main),
-and [`jsonplaceholder`](https://jsonplaceholder.typicode.com).
+Check the provided [OpenAPI Spec file](./sample-api/openapi/schema.yaml) for more details.
 
-Check the provided [OpenAPI Spec file](./httpbin.openapi.yaml) for more details.
-
-You can generate a signed JWT (with the RS256 alg) using the `curl -sL http://auth.demo.localhost/auth?ttl=5m` command.
+You can generate a signed JWT (with the RS256 alg) using the `POST /v1/login` endpoint.
 
 The public key is automatically mounted in `/config/rs256.pem` in **OpenPolicyAgent**'s pod.
 

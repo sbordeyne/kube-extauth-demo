@@ -1,0 +1,36 @@
+{
+  "name": "user_admin_can_read_user",
+  "description": "admin has users:read and can read a user",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token",
+        "uid": ".user.id"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users/{{uid}}"
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".id != null"
+        ]
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

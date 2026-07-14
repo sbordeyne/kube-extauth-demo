@@ -1,0 +1,43 @@
+{
+  "name": "user_admin_can_create_users",
+  "description": "admin has users:create and can create a user",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+          "email": "newuser-{{nonce}}@example.com",
+          "password": "password123",
+          "first_name": "New",
+          "last_name": "User",
+          "role": "reader"
+        }
+      },
+      "expect": {
+        "status": 201,
+        "jq": [
+          ".id != null",
+          ".role.slug == \"reader\""
+        ]
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

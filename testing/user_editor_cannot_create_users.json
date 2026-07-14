@@ -1,0 +1,39 @@
+{
+  "name": "user_editor_cannot_create_users",
+  "description": "editor lacks users:create \u2014 creating a user must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "editor@example.com",
+          "password": "editor"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+          "email": "newuser-{{nonce}}@example.com",
+          "password": "password123",
+          "first_name": "New",
+          "last_name": "User",
+          "role": "reader"
+        }
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+database:
+  url: postgresql://demo:demo@postgres.postgres.svc.cluster.local:5432/demo?sslmode=disable
+jwt:
+  private_key_file: /etc/sample-api/rs256.key
+  public_key_file: /etc/sample-api/rs256.pem
+http:
+  health: :9090
+  public: :8080

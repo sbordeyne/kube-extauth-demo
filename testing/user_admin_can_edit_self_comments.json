@@ -1,0 +1,47 @@
+{
+  "name": "user_admin_can_edit_self_comments",
+  "description": "admin creates a comment then edits its own comment",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "admin@example.com", "password": "admin" }
+      },
+      "expect": { "status": 200 },
+      "capture": { "token": ".token" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": { "title": "Post", "content": "body" }
+      },
+      "expect": { "status": 201 },
+      "capture": { "post_id": ".id" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts/{{post_id}}/comments",
+        "body": { "content": "original" }
+      },
+      "expect": { "status": 201 },
+      "capture": { "comment_id": ".id" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "PUT",
+        "path": "/v1/posts/{{post_id}}/comments/{{comment_id}}",
+        "body": { "content": "edited by author" }
+      },
+      "expect": {
+        "status": 200,
+        "jq": [".content == \"edited by author\""]
+      }
+    }
+  ]
+}

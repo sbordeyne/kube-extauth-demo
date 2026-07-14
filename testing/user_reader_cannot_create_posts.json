@@ -1,0 +1,24 @@
+{
+  "name": "user_reader_cannot_create_posts",
+  "description": "reader lacks post:create — creating a post must be forbidden (expects 403; FAILS until OPA enforces scopes)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "reader@example.com", "password": "reader" }
+      },
+      "expect": { "status": 200 },
+      "capture": { "token": ".token" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": { "title": "Reader post", "content": "Should be rejected" }
+      },
+      "expect": { "status": 403 }
+    }
+  ]
+}

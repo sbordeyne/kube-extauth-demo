@@ -1,0 +1,36 @@
+{
+  "name": "user_reader_can_read_self_user",
+  "description": "reader has users:read:me and can read its own user record",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "reader@example.com",
+          "password": "reader"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token",
+        "uid": ".user.id"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users/{{uid}}"
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".email == \"reader@example.com\""
+        ]
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "user_reader_cannot_read_others_user",
+  "description": "reader has only users:read:me \u2014 reading another user must be forbidden (expects 403)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+          "email": "newuser-{{nonce}}@example.com",
+          "password": "password123",
+          "first_name": "New",
+          "last_name": "User",
+          "role": "reader"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token}}",
+      "capture": {
+        "target_uid": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "reader@example.com",
+          "password": "reader"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/v1/users/{{target_uid}}"
+      },
+      "expect": {
+        "status": 403
+      },
+      "auth": "{{token2}}"
+    }
+  ]
+}

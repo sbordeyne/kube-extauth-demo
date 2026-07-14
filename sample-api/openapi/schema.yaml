@@ -1,0 +1,885 @@
+openapi: 3.0.3
+info:
+  title: Sample Blog API
+  description: >
+    Sample blog API for the kube-extauth demo. Exposes CRUD for users, posts,
+    and post comments, plus a login endpoint that issues a JWT bearer token.
+    Protected endpoints require an RS256-signed JWT (see jwt-test-server).
+  version: 1.0.0
+servers:
+  - url: http://api.demo.localhost
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication and token issuance.
+  - name: Users
+    description: User accounts, profile, and roles.
+  - name: Posts
+    description: Blog posts.
+  - name: Comments
+    description: Comments attached to posts.
+
+paths:
+  /v1/login:
+    post:
+      operationId: login
+      tags: [Auth]
+      summary: Authenticate and obtain a JWT bearer token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/users:
+    get:
+      operationId: listUsers
+      tags: [Users]
+      summary: List users.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: A page of users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      operationId: createUser
+      tags: [Users]
+      summary: Create a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getUser
+      tags: [Users]
+      summary: Get a user by id.
+      responses:
+        '200':
+          description: The requested user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: replaceUser
+      tags: [Users]
+      summary: Replace a user (full update).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '200':
+          description: User replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    patch:
+      operationId: updateUser
+      tags: [Users]
+      summary: Partially update a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      operationId: deleteUser
+      tags: [Users]
+      summary: Delete a user.
+      responses:
+        '204':
+          description: User deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/posts:
+    get:
+      operationId: listPosts
+      tags: [Posts]
+      summary: List posts.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: status
+          in: query
+          description: Filter by post status.
+          required: false
+          schema:
+            $ref: '#/components/schemas/PostStatus'
+        - name: tag
+          in: query
+          description: Filter by tag.
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A page of posts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createPost
+      tags: [Posts]
+      summary: Create a post.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCreate'
+      responses:
+        '201':
+          description: Post created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/posts/{postId}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    get:
+      operationId: getPost
+      tags: [Posts]
+      summary: Get a post by id.
+      responses:
+        '200':
+          description: The requested post.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: replacePost
+      tags: [Posts]
+      summary: Replace a post (full update).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCreate'
+      responses:
+        '200':
+          description: Post replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      operationId: deletePost
+      tags: [Posts]
+      summary: Delete a post.
+      responses:
+        '204':
+          description: Post deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/posts/{postId}/comments:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    get:
+      operationId: listComments
+      tags: [Comments]
+      summary: List comments on a post.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: A page of comments.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: createComment
+      tags: [Comments]
+      summary: Add a comment to a post.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreate'
+      responses:
+        '201':
+          description: Comment created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/posts/{postId}/comments/{commentId}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+      - $ref: '#/components/parameters/CommentId'
+    put:
+      operationId: updateComment
+      tags: [Comments]
+      summary: Update a comment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdate'
+      responses:
+        '200':
+          description: Comment updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      operationId: deleteComment
+      tags: [Comments]
+      summary: Delete a comment.
+      responses:
+        '204':
+          description: Comment deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      description: User UUID.
+      schema:
+        type: string
+        format: uuid
+    PostId:
+      name: postId
+      in: path
+      required: true
+      description: Post UUID.
+      schema:
+        type: string
+        format: uuid
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      description: Comment UUID.
+      schema:
+        type: string
+        format: uuid
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: 1-based page number.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    PerPageParam:
+      name: per_page
+      in: query
+      required: false
+      description: Number of items per page.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      description: >
+        Sort field. Prefix with '-' for descending order (e.g. '-created_at').
+      schema:
+        type: string
+        example: -created_at
+
+  responses:
+    BadRequest:
+      description: The request was malformed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication is required or the token is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: The caller is not allowed to perform this action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: The request conflicts with the current state (e.g. duplicate email).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: The request was well-formed but failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      description: Standard error envelope.
+      required: [code, error]
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Application or HTTP status code.
+          example: 404
+        error:
+          type: string
+          description: Human-readable error message.
+          example: user not found
+
+    PaginationMeta:
+      type: object
+      required: [total, page, per_page]
+      properties:
+        total:
+          type: integer
+          format: int64
+          description: Total number of items across all pages.
+          example: 137
+        page:
+          type: integer
+          format: int32
+          description: Current 1-based page number.
+          example: 2
+        per_page:
+          type: integer
+          format: int32
+          description: Number of items per page.
+          example: 20
+
+    RoleSlug:
+      type: string
+      description: Role identifier.
+      enum:
+        - admin
+        - editor
+        - reader
+
+    Role:
+      type: object
+      description: A role and the scopes it grants.
+      required: [id, slug, scopes]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          $ref: '#/components/schemas/RoleSlug'
+        scopes:
+          type: array
+          readOnly: true
+          description: >
+            Granted scopes, each of the form <resource>:<action>(:<actor>)?.
+          items:
+            type: string
+          example: [post:read, post:list, comment:create]
+
+    User:
+      type: object
+      required: [id, email, first_name, last_name, role, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          example: ada@example.com
+        first_name:
+          type: string
+          example: Ada
+        last_name:
+          type: string
+          example: Lovelace
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          example: https://cdn.example.com/avatars/ada.png
+        bio:
+          type: string
+          nullable: true
+          example: Mathematician and writer.
+        role:
+          allOf:
+            - $ref: '#/components/schemas/Role'
+          readOnly: true
+          description: Expanded role, including its granted scopes.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    UserCreate:
+      type: object
+      required: [email, password, first_name, last_name, role]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 8
+        first_name:
+          type: string
+        last_name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        role:
+          allOf:
+            - $ref: '#/components/schemas/RoleSlug'
+          default: reader
+          description: Role slug; the server resolves it to a role.
+
+    UserUpdate:
+      type: object
+      description: Partial user update. All fields optional.
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 8
+        first_name:
+          type: string
+        last_name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        role:
+          allOf:
+            - $ref: '#/components/schemas/RoleSlug'
+          description: Role slug; the server resolves it to a role.
+
+    UserList:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PostStatus:
+      type: string
+      description: Publication status of a post.
+      enum:
+        - draft
+        - published
+        - archived
+
+    Post:
+      type: object
+      required:
+        - id
+        - title
+        - slug
+        - content
+        - status
+        - author_id
+        - categories
+        - tags
+        - comment_count
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          example: Hello, World
+        slug:
+          type: string
+          readOnly: true
+          example: hello-world
+        content:
+          type: string
+        excerpt:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/PostStatus'
+        author_id:
+          type: string
+          format: uuid
+          description: UUID of the authoring user.
+        author:
+          allOf:
+            - $ref: '#/components/schemas/User'
+          nullable: true
+          readOnly: true
+          description: Expanded author, when included by the server.
+        categories:
+          type: array
+          items:
+            type: string
+          example: [engineering, kubernetes]
+        tags:
+          type: array
+          items:
+            type: string
+          example: [opa, envoy]
+        comment_count:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 12
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    PostCreate:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+          nullable: true
+        status:
+          allOf:
+            - $ref: '#/components/schemas/PostStatus'
+          default: draft
+        categories:
+          type: array
+          items:
+            type: string
+          default: []
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+
+    PostList:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    Comment:
+      type: object
+      required: [id, post_id, author_id, content, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        post_id:
+          type: string
+          format: uuid
+          readOnly: true
+        author_id:
+          type: string
+          format: uuid
+          description: UUID of the commenting user.
+        author:
+          allOf:
+            - $ref: '#/components/schemas/User'
+          nullable: true
+          readOnly: true
+          description: Expanded commenter, when included by the server.
+        content:
+          type: string
+          example: Great post, thanks!
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    CommentCreate:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+
+    CommentUpdate:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+
+    CommentList:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          writeOnly: true
+
+    LoginResponse:
+      type: object
+      required: [token, token_type, expires_at, user]
+      properties:
+        token:
+          type: string
+          description: Signed JWT bearer token.
+        token_type:
+          type: string
+          enum: [bearer]
+          default: bearer
+        expires_at:
+          type: string
+          format: date-time
+          description: Token expiry timestamp.
+        user:
+          $ref: '#/components/schemas/User'

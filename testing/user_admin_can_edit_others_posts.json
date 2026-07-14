@@ -1,0 +1,72 @@
+{
+  "name": "user_admin_can_edit_others_posts",
+  "description": "admin has unscoped post:edit \u2014 editor creates a post, admin replaces it",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "admin@example.com",
+          "password": "admin"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+          "email": "editor@example.com",
+          "password": "editor"
+        }
+      },
+      "expect": {
+        "status": 200
+      },
+      "capture": {
+        "token2": ".token"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": {
+          "title": "Scenario post",
+          "content": "body"
+        }
+      },
+      "expect": {
+        "status": 201
+      },
+      "auth": "{{token2}}",
+      "capture": {
+        "post_id": ".id"
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/v1/posts/{{post_id}}",
+        "body": {
+          "title": "Admin edit",
+          "content": "x"
+        }
+      },
+      "expect": {
+        "status": 200,
+        "jq": [
+          ".title == \"Admin edit\""
+        ]
+      },
+      "auth": "{{token}}"
+    }
+  ]
+}

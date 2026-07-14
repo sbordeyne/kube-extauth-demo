@@ -1,0 +1,53 @@
+{
+  "name": "user_reader_cannot_edit_others_comments",
+  "description": "reader has only comment:edit:me — editing someone else's comment must be forbidden (expects 403; FAILS until OPA enforces scopes)",
+  "steps": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "admin@example.com", "password": "admin" }
+      },
+      "expect": { "status": 200 },
+      "capture": { "token": ".token" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts",
+        "body": { "title": "Shared post", "content": "body" }
+      },
+      "expect": { "status": 201 },
+      "capture": { "post_id": ".id" }
+    },
+    {
+      "auth": "{{token}}",
+      "request": {
+        "method": "POST",
+        "path": "/v1/posts/{{post_id}}/comments",
+        "body": { "content": "admin's comment" }
+      },
+      "expect": { "status": 201 },
+      "capture": { "comment_id": ".id" }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": { "email": "reader@example.com", "password": "reader" }
+      },
+      "expect": { "status": 200 },
+      "capture": { "token2": ".token" }
+    },
+    {
+      "auth": "{{token2}}",
+      "request": {
+        "method": "PUT",
+        "path": "/v1/posts/{{post_id}}/comments/{{comment_id}}",
+        "body": { "content": "reader trying to edit admin's comment" }
+      },
+      "expect": { "status": 403 }
+    }
+  ]
+}
