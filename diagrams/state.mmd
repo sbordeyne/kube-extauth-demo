@@ -1,0 +1,20 @@
+stateDiagram-v2
+    [*] --> Received: Client hits kgateway (Envoy)
+    Received --> ExtAuthCheck: TrafficPolicy api-extauth<br/>gRPC ext_authz to OPA
+
+    state ExtAuthCheck {
+        [*] --> VerifySignature
+        VerifySignature --> VerifyExpiryIssuer: RS256 ok
+        VerifyExpiryIssuer --> VerifyScopes: not expired, issuer ok
+        VerifyScopes --> Allowed: scope matches endpoint
+        VerifySignature --> Denied: bad signature
+        VerifyExpiryIssuer --> Denied: expired / wrong issuer
+        VerifyScopes --> Denied: scope mismatch
+    }
+
+    Allowed --> Forwarded: Envoy forwards to sample-api
+    Forwarded --> Success: backend 200
+    Success --> [*]: 200 to client
+
+    Denied --> Rejected: Envoy returns 403<br/>backend never reached
+    Rejected --> [*]: 403 to client

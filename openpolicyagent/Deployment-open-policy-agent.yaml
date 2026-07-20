@@ -49,6 +49,12 @@ spec:
             limits:
               cpu: 200m
               memory: 200Mi
+          env:
+            - name: RS256_CERT
+              valueFrom:
+                configMapKeyRef:
+                  name: opa-envoy-config
+                  key: rs256.pem
           livenessProbe:
             httpGet:
               path: /health?plugins

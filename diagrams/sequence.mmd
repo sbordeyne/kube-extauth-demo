@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor C as Client
+    participant G as kgateway (Envoy)
+    participant O as OpenPolicyAgent<br/>(ext_authz gRPC :9191)
+    participant B as sample-api (Backend)
+
+    C->>G: HTTP request<br/>(Authorization: Bearer JWT)
+    Note over G: TrafficPolicy api-extauth<br/>-> GatewayExtension opa-envoy
+    G->>O: CheckRequest (gRPC ext_authz)<br/>method, path, headers, body
+    Note over O: policy envoy/authz/allow<br/>verify RS256 sig, exp, issuer,<br/>match scopes vs endpoint
+
+    alt authorized (allow = true)
+        O-->>G: CheckResponse OK (200)
+        G->>B: forward request
+        B-->>G: 200 response
+        G-->>C: 200 response
+    else not authorized (allow = false)
+        O-->>G: CheckResponse Denied (403)
+        Note over G: backend never reached
+        G-->>C: 403 Forbidden
+    end

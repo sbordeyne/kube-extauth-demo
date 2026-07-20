@@ -1,0 +1,22 @@
+flowchart TD
+    C([Client request<br/>Bearer JWT]) --> G[kgateway / Envoy]
+    G -->|TrafficPolicy api-extauth<br/>ext_authz| O[OpenPolicyAgent<br/>envoy/authz/allow]
+
+    O --> V1{RS256 signature<br/>valid?}
+    V1 -->|no| D[403 Forbidden]
+    V1 -->|yes| V2{JWT not expired<br/>& issuer ok?}
+    V2 -->|no| D
+    V2 -->|yes| V3{scope matches<br/>resource:action?}
+    V3 -->|no| D
+    V3 -->|yes| A[allow = true]
+
+    A --> G2[Envoy forwards]
+    G2 --> B[sample-api backend]
+    B --> R200([200 response])
+
+    D --> R403([403 to client<br/>backend never reached])
+
+    classDef deny fill:#f8d7da,stroke:#c00,color:#600;
+    classDef ok fill:#d4edda,stroke:#080,color:#060;
+    class D,R403 deny;
+    class A,R200,B ok;
