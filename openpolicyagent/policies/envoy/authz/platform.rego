@@ -2,6 +2,8 @@ package envoy.authz
 
 import rego.v1
 
+cert := opa.runtime().env.RS256_CERT
+
 default allow := false
 
 allow if {
